@@ -1,0 +1,416 @@
+<html>
+	<head>
+		<script type="text/javascript">
+			let total_input_char_count = 0
+			let words = []
+			let cur_word = ""
+			let cur_word_stats = []
+			
+			let statistics = {}
+
+			let cur_word_index = 0
+			let cur_char_index = 0
+			// map["test"] = 2
+			let incorrect_char_count = 0
+			let total_time = 0
+			let start_time = (new Date()).getTime()
+			let end_time = new Date().getTime()
+			let cidx = 0
+			let idx_dict = {}
+			let cur_statistics = {}
+			function create_index(sentence){
+			  let words = sentence.split(' ');
+			  let word = ""
+			  let idx_dict = {}
+			  let last_end_idx = -1	
+			  for(i in words) {
+			    word = words[i]
+			    let sidx = last_end_idx + 1
+			    let eidx = sidx + word.length
+			    
+			    if (parseInt(i) !== words.length-1 ){
+			      word = word+" "  
+			    } else {
+			      eidx = eidx-1 
+			    }
+
+			    idx_dict[eidx] = {"s": sidx, "w":word}
+			    last_end_idx = eidx
+			  }
+			  return idx_dict
+			}
+
+
+			let string = "hello"
+			//console.log(string.substring(0,3))
+
+
+			function check(typeIdx, user_typed_string){
+				let status = false
+				let found = false
+				let entry = idx_dict[typeIdx]
+				let word = null
+				if(entry != null){
+					let start = entry["s"]
+					word = entry["w"]
+			  		let user_word = user_typed_string.substring(start, typeIdx+1)
+			    	console.log("user_word",user_word)
+
+			    	found = true
+					if(user_word.trim() === word.trim()) {
+						status = true
+					} else {
+						status = false    
+					}
+					
+					console.log(typeof word)
+				} else {
+					found = false
+				}
+				return [found, status, word]
+			}
+
+			
+			function init_vars(){
+				total_input_char_count = 0
+				words = []
+				cur_word = ""
+				cidx = 0
+				cur_word_stats = []
+				statistics = {}
+				cur_statistics = {}
+				cur_word_index = 0
+				cur_char_index = 0
+				
+				total_time = 0
+				start_time = (new Date()).getTime()
+				end_time = new Date().getTime()
+				let local_stats = JSON.parse(window.localStorage.getItem("local_stored_stats"))
+				incorrect_char_count = 0
+				if (local_stats != null) {
+					statistics = local_stats
+				}				
+				document.getElementById("stats").innerText = 'stats:'
+			}
+
+			function generate_exercise(){
+				init_vars()
+				let num_of_words = document.getElementById("num").value
+
+
+				const Http = new XMLHttpRequest();
+				const url='http://localhost:5001/get_exercise?num='+num_of_words;
+				Http.open("GET", url);
+				Http.send();
+
+				Http.onreadystatechange = (e) => {
+					// console.log(e)
+					let responseText = Http.responseText
+					console.log("responseText",responseText)
+					if(responseText !== ""){
+						let json_data =  JSON.parse(responseText)
+						console.log("json_data",json_data)
+						let sentences = json_data["words"].join(" ")
+					  	set_setences(sentences)
+					}
+				}
+				// alert("successfull")
+			}
+
+			function random_int(min,max){
+				return Math.floor(Math.random() * (max - min) ) + min
+			}
+
+			function shuffle(array) {
+  				var tmp, current, top = array.length
+  				if(top) while(--top) {
+  					current = Math.floor(Math.random() * (top + 1))
+  					tmp = array[current]
+  					array[current] = array[top]
+  					array[top] = tmp
+  				}
+  				return array
+  			}
+
+
+			function set_setences(sentences){
+					document.getElementById("words_to_type").innerText=sentences
+					function prepare_div(id){					
+					  	document.getElementById(id).textContent = ''
+					  	document.getElementById(id).style.display = "block"
+					  	document.getElementById(id).focus()
+					  	document.getElementById(id).setAttribute("contenteditable", true)
+					}
+					prepare_div("ii")
+					prepare_div("ii_visible")
+				  	idx_dict = create_index(sentences)
+			}
+
+
+			function generate_adaptive_exercise(){
+				let word_count = document.getElementById("num").value
+				init_vars()
+
+				let hard_words = []
+				let slowest_words = []
+				hard_words = Object.keys(statistics).filter(function(key){
+
+					if (statistics[key]["is_correct"] == false) {
+						return key
+					}
+				})
+				console.log(hard_words)
+				slowest_words = Object.keys(statistics).filter(function(key){
+						console.log(statistics[key]["is_correct"])
+						if (statistics[key]["is_correct"] == true){
+							return([key, statistics[key]["speed"]])
+
+						}
+				})
+
+				slowest_words.sort(function(wordA,wordB){
+					return wordA[1] - wordB[1]
+				})
+				
+				slowest_words.reverse()
+
+				if(slowest_words.length > 3){
+					slowest_words = slowest_words.slice(0,3)
+				}
+				console.log("slowest_words",slowest_words)
+				console.log(slowest_words)
+				// slowest_words_new = slowest_words.map(function(data){
+
+				// 	return data[0]
+				// })
+				// console.log(slowest_words_new)
+				hard_words.push(...slowest_words)
+				if (word_count > hard_words.length){
+					alert("You don't have enough hard words yet. Please enter a number less than "+hard_words.length)
+				} else {
+					console.log(hard_words)
+					let sentences = []
+					let done_indxs = []
+					sentences = shuffle(hard_words)
+					// for(let i = 0; i<word_count; i++) {
+					// 	let index = random_int(0,word_count-1)
+					// 	while(done_indxs.includes(index)){
+					// 		index = random_int(0,word_count-1)
+					// 	}
+					// 	sentences.push(hard_words[index])
+					// 	done_indxs.push(index)
+						
+					// }
+					// sentences = sentences.join(" ")
+					sentences = sentences.slice(0,word_count)
+					set_setences(sentences.join(" "))
+				}
+			}
+			
+			function get_wpm(stats){
+				let total_time_taken = 0
+				let char_count = 0
+				for (key in stats){
+					let record = stats[key]
+					let speed = record["speed"]
+					let w_length = key.length
+
+					let time_spent = w_length*speed
+					total_time_taken += time_spent
+					char_count += w_length
+				}
+				let wpm = parseInt((char_count/5)/(total_time_taken/(1000*60)))
+				console.log(total_time_taken, char_count, wpm)
+				return wpm
+			}
+
+			function setCaret(elemId, caretPos) {
+			    var elem = document.getElementById(elemId);
+
+			    if(elem != null) {
+			        if(elem.createTextRange) {
+			            var range = elem.createTextRange();
+			            range.move('character', caretPos);
+			            range.select();
+			        }
+			        else {
+			            if(elem.selectionStart) {
+			                elem.focus();
+			                elem.setSelectionRange(caretPos, caretPos);
+			            }
+			            else
+			                elem.focus();
+			        }
+			    }
+			}
+
+
+			function process(e){
+				// console.log("e.keyCode=",e.keyCode)
+				// Todo 
+				// 1. take care of backspaces.
+				// 2. increment only when it is a keyboard charecter
+				// document.getElementById("ii_visible").innerText += e.keyCode
+				// console.log("e.key=",e.key,"e.keyCode=",e.keyCode,"e=",e)
+		
+				if(e.key.length === 1){//typed chars
+					document.getElementById("ii").textContent += e.key
+				} else if(e.keyCode === 8){//backspace
+					let curr_value = document.getElementById("ii").textContent
+					document.getElementById("ii").textContent = curr_value.substring(0,curr_value.length-1)
+				}
+				let type_content = document.getElementById("words_to_type").innerText
+				let user_input = document.getElementById("ii").textContent
+				console.log("user_input is:",user_input)
+				
+				let [is_word, is_correct, orig_word] = check(cidx, user_input)
+
+				highlighted_input = highlight_errors(user_input, type_content)
+				// highlighted_input = user_input
+				// console.log("highlighted_input",highlighted_input)
+				document.getElementById("ii").innerHTML = highlighted_input
+				// setCaret("ii_visible", highlighted_input.length)
+
+				// statistics[orig_word] = {}
+				
+				if(is_word) {
+					cur_statistics[orig_word] = {}
+					end_time = new Date().getTime()
+					let time_per_word = end_time - start_time
+					let speed = time_per_word/(orig_word.length)
+					cur_statistics[orig_word]["speed"] = speed
+					if(is_correct) {
+						cur_statistics[orig_word]["is_correct"] = true
+					} else { // not correct
+						cur_statistics[orig_word]["is_correct"] = false
+					}
+					start_time = (new Date()).getTime()
+
+				} 
+				
+				sentences = document.getElementById("words_to_type").innerText
+				
+				if(e.keyCode == 8){ //backspace
+					cidx = cidx - 1	
+				} else{
+					cidx = cidx + 1
+				}
+				if(cidx == sentences.length){
+					document.getElementById('ii').setAttribute("contenteditable", false)
+					document.getElementById('ii_visible').setAttribute("contenteditable", false)
+					alert("your done with the sentence, check stats !")
+					let wpm = get_wpm(cur_statistics)
+					console.log(incorrect_char_count)
+					let accuracy = get_accuracy(user_input,sentences)
+					document.getElementById('stats').innerText = "Your speed is: "+wpm +" words per minute ! \n Your accuracy is: " + accuracy+"%"
+					let new_unified_statistics = {...statistics, ...cur_statistics}
+					window.localStorage.setItem("local_stored_stats", JSON.stringify(new_unified_statistics))
+				}
+				
+			}
+
+			function to_arr_of_char_arr(sentence){
+				sentence = sentence.split(" ")
+				let arr_of_arr = []
+				for (idx in sentence) {
+					let word = sentence[idx].trim()
+					arr_of_arr.push(word.split(''))
+				}	
+				return arr_of_arr
+			}
+
+			function len_of_arr_of_arr(split_sentence){
+				let char_count = 0
+				
+				for(index in split_sentence){
+					let chararr = split_sentence[index]
+					
+					char_count = char_count + chararr.length
+				}
+				return(char_count)
+			}
+			
+			function highlight_word(word){
+				return "<font style=\"color:red\">"+word+"</font>"
+			}
+
+
+			function highlight_errors(user_input, sentences){
+				let highlighted_user_input = ""
+				let correct = []
+				let incorrect = []
+				for(let i = 0; i<user_input.length; i++){
+					if(user_input[i] === sentences[i]){
+						if(incorrect.length > 0){							
+							highlighted_user_input += highlight_word(incorrect.join(""))
+							incorrect = []
+						}
+						correct.push(user_input[i])
+					} else {
+						highlighted_user_input += correct.join("")
+						correct = []
+						incorrect.push(user_input[i])
+					}
+				}	
+				if(incorrect.length > 0){
+					highlighted_user_input += highlight_word(incorrect.join(""))
+				}
+				highlighted_user_input += correct.join("")
+				return highlighted_user_input			
+			}
+
+			function get_accuracy(user_input,sentences){
+				let wrong_chars = 0
+				let accuracy = 0
+				for(let i = 0; i<user_input.length; i++){
+					if(user_input[i] !== sentences[i]){
+						wrong_chars = wrong_chars + 1
+					}
+				}
+				accuracy = Math.floor((1-(wrong_chars/user_input.length))*100)
+				return accuracy
+			}
+
+
+		</script>
+
+	</head>
+	<body>
+		<!--
+			1. Create a input field to capture for number of words
+			2. Add a submit button
+			3. On press of submit button call a python API that returns list of words
+			https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
+		-->
+		Number of words: 
+		<input type="text" id="num" value="2"/>
+		<input type="submit" onclick="generate_exercise()" value="Generate Exercise"/>
+		<input type="submit" onclick="generate_adaptive_exercise()" value="Generate Adaptive Exercise"/>
+		<div id="words_to_type"></div>
+		<!-- <textarea id="ii" rows=10 cols=100 placeholder="Type here"></textarea> -->
+
+		<div id="ii" contenteditable="true" style="display:none; border: 0px; border-style: solid; color: black; height: 2rem; width: 50rem;">
+		</div>
+
+		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;">
+			<!-- Change <font style="color:red">m</font>e <font style="color:red">bot</font>e! -->
+		</div>
+
+
+		<div id="stats" style="display:block; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem;">
+			Stats:
+
+		</div>
+
+
+	</body>
+	<script type="text/javascript">
+		document.getElementById("ii_visible").addEventListener("keyup", process);
+	</script>
+</html>
+
+
+
+
+
+

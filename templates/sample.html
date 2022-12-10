@@ -1,0 +1,130 @@
+<html>
+	<head>
+		<script type="text/javascript">
+			function handleSubmit(){
+				let num_of_words = document.getElementById("num").value
+				console.log(num_of_words)
+				console.log("calling handleSubmit")
+				const Http = new XMLHttpRequest();
+				const url='http://localhost:5001/get_exercise?num='+num_of_words;
+				Http.open("GET", url);
+				Http.send();
+
+				Http.onreadystatechange = (e) => {
+					// console.log(e)
+					let responseText = Http.responseText
+					let json_data =  JSON.parse(responseText)
+					var sentences = ""
+					for(let i=0; i<json_data.length; i++){
+						sentences += json_data[i]
+						sentences += " "
+					}
+					// let sentences = json_data
+				  	console.log(json_data)
+				  	document.getElementById("words_to_type").innerText=sentences
+				}
+				// alert("successfull")
+			}
+
+			let words = []
+			let cur_word = ""
+			let cur_word_stats = []
+			let statistics = {}
+			let cur_word_index = 0
+			let cur_char_index = 0
+			// map["test"] = 2
+			for(word in sentences){
+				word.split("")
+			}
+
+			let start_time = (new Date()).getTime()
+			function process(e){
+				// console.log(e.key)
+				
+				if(e.key ==" "){
+
+					words.push(cur_word)
+					let end_time = (new Date()).getTime()
+					 
+					let time_per_word = end_time - start_time
+					start_time = end_time
+					
+					let cur_statistics = statistics[cur_word]
+					let cur_speed = time_per_word/(cur_word.length)
+					if (cur_statistics == null){
+						statistics[cur_word] = {"average_speed":0, "total_times_typed":0}
+					} 
+					let avg_speed = statistics[cur_word]["average_speed"]
+					let total_times_typed = statistics[cur_word]["total_times_typed"]
+					total_times_typed += 1
+					avg_speed = (avg_speed*(total_times_typed-1) + cur_speed)/total_times_typed
+
+					statistics[cur_word]["average_speed"] = avg_speed
+					statistics[cur_word]["total_times_typed"] = total_times_typed
+					console.log(statistics)
+					cur_word = ""
+
+					let hard_words = Object.keys(statistics).map(function(key){
+						return([key, statistics[key]["average_speed"]])
+					console.log(sentences)
+					})
+					
+					
+					
+					
+
+					hard_words.sort(function(wordA,wordB){
+						return wordA[1] - wordB[1]
+					})
+					hard_words.reverse()
+					let length = hard_words.length
+					if(length > 10){
+						console.log(hard_words.slice(0,10))
+					}
+					
+					else{
+						console.log(hard_words)
+					}
+					
+
+				} else {
+					if(sentences[cur_word_index][cur_char_index] != e.key){
+						
+					}
+					cur_word += e.key
+				}
+				// console.log(e.target);
+			}
+
+			
+
+			console.log(words)
+		</script>
+
+	</head>
+	<body>
+		<!--
+			1. Create a input field to capture for number of words
+			2. Add a submit button
+			3. On press of submit button call a python API that returns list of words
+			https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
+		-->
+		Number of words: 
+		<input type="text" id="num"/>
+		<input type="submit" onclick="handleSubmit()" value="Generate Exercise"/>
+		<div id="words_to_type"></div>
+		<!-- <textarea id="ii" rows=10 cols=100 placeholder="Type here">my text is <b>here</b></textarea> -->
+		<div id="ii" contenteditable="true" style="border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;">
+			Change <font style="color:red">m</font>e <font style="color:red">bot</font>e!
+		</div>
+	</body>
+	<script type="text/javascript">
+		document.getElementById("ii").addEventListener("keypress", process);
+	</script>
+</html>
+
+
+
+
+
+
