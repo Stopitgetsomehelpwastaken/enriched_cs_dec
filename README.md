@@ -5,6 +5,8 @@ After you use it for a bit you have an option to use the adaptive mode
 
 It takes what words you struggle with and makes you type them so you can get better
 
+Also just btw files hackathon_dec_2022_p1.py and hackathon_dec_2022_p3.py are complete on their own and the rest of the files are dedicated to the final product
+
 
 
 
