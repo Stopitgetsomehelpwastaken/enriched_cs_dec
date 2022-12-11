@@ -90,31 +90,29 @@
 				if (local_stats != null) {
 					statistics = local_stats
 				}				
-				document.getElementById("stats").innerText = 'stats:'
+
+				document.getElementById("stats").style.display = "none"
 			}
 
 			function generate_exercise(){
 				init_vars()
 				let num_of_words = document.getElementById("num").value
+				validity = valid_input_checker(num_of_words)
 
-
-				const Http = new XMLHttpRequest();
-				const url='http://localhost:5001/get_exercise?num='+num_of_words;
-				Http.open("GET", url);
-				Http.send();
-
-				Http.onreadystatechange = (e) => {
-					// console.log(e)
-					let responseText = Http.responseText
-					console.log("responseText",responseText)
-					if(responseText !== ""){
-						let json_data =  JSON.parse(responseText)
-						console.log("json_data",json_data)
-						let sentences = json_data["words"].join(" ")
-					  	set_setences(sentences)
+				if(validity == true){
+					Http.onreadystatechange = (e) => {
+						// console.log(e)
+						let responseText = Http.responseText
+						console.log("responseText",responseText)
+						if(responseText !== ""){
+							let json_data =  JSON.parse(responseText)
+							console.log("json_data",json_data)
+							let sentences = json_data["words"].join(" ")
+						  	set_setences(sentences)
+						}
 					}
-				}
-				// alert("successfull")
+					document.getElementById("words_to_type").style.display = "block"
+				}// alert("successfull")
 			}
 
 			function random_int(min,max){
@@ -150,46 +148,49 @@
 			function generate_adaptive_exercise(){
 				let word_count = document.getElementById("num").value
 				init_vars()
-
-				let hard_words = []
-				let slowest_words = []
-				hard_words = Object.keys(statistics).filter(function(key){
-					if (statistics[key]["is_correct"] == false) {
-						return key
-					}
-				})
-
-				console.log(hard_words)
-				slowest_words = Object.keys(statistics).filter(function(key){
-						console.log(statistics[key]["is_correct"])
-						if (statistics[key]["is_correct"] == true){
-							return([key, statistics[key]["speed"]])
+				validity = valid_input_checker(word_count)
+				if(validity == true){
+					let hard_words = []
+					let slowest_words = []
+					hard_words = Object.keys(statistics).filter(function(key){
+						if (statistics[key]["is_correct"] == false) {
+							return key
 						}
-				})
+					})
 
-				slowest_words.sort(function(wordA,wordB){
-					return wordA[1] - wordB[1]
-				})
-				
-				slowest_words.reverse()
-
-				if(slowest_words.length > 10){
-					slowest_words = slowest_words.slice(0,10)
-				}
-				console.log("slowest_words",slowest_words)
-				console.log(slowest_words)
-				hard_words.push(...slowest_words)
-				if (word_count > hard_words.length){
-					alert("You don't have enough hard words yet. Please enter a number less than "+hard_words.length)
-				} else {
 					console.log(hard_words)
-					let sentences = []
-					let done_indxs = []
-					sentences = shuffle(hard_words)
-					sentences = sentences.slice(0,word_count)
-					set_setences(sentences.join(" "))
-					document.getElementById("ii_visible").focus()
-					console.log(sentences.join(" "))
+					slowest_words = Object.keys(statistics).filter(function(key){
+							console.log(statistics[key]["is_correct"])
+							if (statistics[key]["is_correct"] == true){
+								return([key, statistics[key]["speed"]])
+							}
+					})
+
+					slowest_words.sort(function(wordA,wordB){
+						return wordA[1] - wordB[1]
+					})
+					
+					slowest_words.reverse()
+
+					if(slowest_words.length > 10){
+						slowest_words = slowest_words.slice(0,10)
+					}
+					console.log("slowest_words",slowest_words)
+					console.log(slowest_words)
+					hard_words.push(...slowest_words)
+					if (word_count > hard_words.length){
+						alert("You don't have enough hard words yet. Please either enter a number less than "+hard_words.length+"\n or do some more normal exercises so you can get more words to improve on")
+					} else {
+						console.log(hard_words)
+						let sentences = []
+						let done_indxs = []
+						sentences = shuffle(hard_words)
+						sentences = sentences.slice(0,word_count)
+						set_setences(sentences.join(" "))
+						document.getElementById("ii_visible").focus()
+						console.log(sentences.join(" "))
+					document.getElementById("words_to_type").style.display = "block"
+					}
 				}
 			}
 			
@@ -245,6 +246,7 @@
 					let curr_value = document.getElementById("ii").textContent
 					document.getElementById("ii").textContent = curr_value.substring(0,curr_value.length-1)
 				}
+
 				let type_content = document.getElementById("words_to_type").innerText
 				let user_input = document.getElementById("ii").textContent
 				console.log("user_input is:",user_input)
@@ -287,6 +289,7 @@
 					document.getElementById('ii').setAttribute("contenteditable", false)
 					document.getElementById('ii_visible').setAttribute("contenteditable", false)
 					alert("your done with the sentence, check stats !")
+					document.getElementById("stats").style.display = "block"
 					let wpm = get_wpm(cur_statistics)
 					console.log(incorrect_char_count)
 					let accuracy = get_accuracy(user_input,sentences)
@@ -359,6 +362,35 @@
 				return accuracy
 			}
 
+			function valid_input_checker(num){
+				string = ""
+				if(isNaN(num) == true){
+					alert("hah u thought u were so slick putting letters yeah not happenign today buddy")
+					document.getElementById("num").value = ""
+					document.getElementById("num").focus()
+					return false
+				}else if(num == ""){
+					alert("bro put an actual number")
+					document.getElementById("num").focus()
+					return false
+				}else if(num>100){
+					alert("Yeah no ur not typing that many words 100 is the limit")
+					document.getElementById("num").value = ""
+					document.getElementById("num").focus()
+					return false
+				}else if(parseInt(num) != num){
+					
+					alert("Please put an integer")
+					document.getElementById("num").value = ""
+					document.getElementById("num").focus()
+				}else if(num<=0){
+					alert("yeah and how exactly do u plan on typing a negative amount of words")
+					document.getElementById("num").value = ""
+					document.getElementById("num").focus()
+				}else{
+					return true
+				}
+			}
 
 		</script>
 
@@ -371,22 +403,22 @@
 			https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
 		-->
 		Number of words: 
-		<input type="text" id="num" value="2"/>
+		<input type="text" id="num" type="number" value="2"/>
 		<input type="submit" onclick="generate_exercise()" value="Generate Exercise"/>
 		<input type="submit" onclick="generate_adaptive_exercise()" value="Generate Adaptive Exercise"/>
-		<div id="words_to_type"></div>
+		<div id="words_to_type" style="border: 1px; border-style: solid; bottom:-100; display:none"></div>
 		<!-- <textarea id="ii" rows=10 cols=100 placeholder="Type here"></textarea> -->
 
 		
 
-		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;position: absolute;">
+		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;position: absolute; bottom:550">
 			<!-- Change <font style="color:red">m</font>e <font style="color:red">bot</font>e! -->
 		</div>
 
-		<div id="ii" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem; position: absolute;">
+		<div id="ii" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem; position: absolute; bottom:550">
 		</div>
 
-		<div id="stats" style="display:block; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem; position:relative; bottom:-200;">
+		<div id="stats" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem; position:relative; bottom:-200;">
 			Stats:
 
 		</div>
