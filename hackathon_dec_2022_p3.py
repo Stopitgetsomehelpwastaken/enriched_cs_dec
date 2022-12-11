@@ -31,13 +31,27 @@ if len(leaderboard)<5:
 else:
 	leaderboard = [leaderboard[i] for i in range(0,4)]
 
-
+def commands(command):
+	if command == "A" or command == "a":
+		typing_thingy()
+	elif command == "E" or command == "e":
+		print("Okay! Exiting program!!")
+		sys.exit()
+	elif command == "L" or command == "l":
+		print("\n")
+		print("Top 5 WPMs:")
+		for num in leaderboard:
+			print("{num}wpm".format(num = num))
+		print("\n")
+		command = input("\nType A to try again, L to see leaderboard, E to exit, or stats to see some statistics\n")
+		commands(command)
+	
 
 def typing_thingy():
 	begining = time.time()
 	sentence_len = input("How many words would you like to type")
 
-	while sentence_len>30:
+	while int(sentence_len)>30:
 		sentence_len = input("too many words, max word count is 30")
 
 	line_to_type = ' '.join(random_word_generator(int(sentence_len)))
@@ -52,7 +66,7 @@ def typing_thingy():
 
 
 	while string != line_to_type:
-		if lower(string) == line_to_type:
+		if string.lower() == line_to_type:
 			string = input("You typed it incorrectly.(remember it is case sensitive)")
 		string = input("You typed it incorrectly, type again\n{line}\n".format(line = line_to_type))
 		if string == "E" or string == "e":
@@ -60,12 +74,12 @@ def typing_thingy():
 			sys.exit()
 
 
-
 	ending = time.time()
 	net_time = ending - begining
 
 	length = len(line_to_type.split())
 	wpm = (length/net_time)*60
+	print(net_time)
 	wpm = int(wpm)
 
 	
@@ -95,13 +109,8 @@ def typing_thingy():
 
 
 
-	if command == "A" or command == "a":
-		typing_thingy()
-	elif command == "E" or command == "e":
-		print("Okay! Exiting program!!")
-		sys.exit()
-	elif command == "L" or command == "l":
-		print([leaderboard[n] for n in valid_indexes if n < len(leaderboard)])
+	command = input("\nType A to try again, L to see leaderboard, E to exit\n")
+	commands(command)
 
 typing_thingy()
 

@@ -10,7 +10,7 @@
 
 			let cur_word_index = 0
 			let cur_char_index = 0
-			// map["test"] = 2
+			
 			let incorrect_char_count = 0
 			let total_time = 0
 			let start_time = (new Date()).getTime()
@@ -42,7 +42,7 @@
 
 
 			let string = "hello"
-			//console.log(string.substring(0,3))
+			
 
 
 			function check(typeIdx, user_typed_string){
@@ -98,10 +98,14 @@
 				init_vars()
 				let num_of_words = document.getElementById("num").value
 				validity = valid_input_checker(num_of_words)
+				const Http = new XMLHttpRequest();
+				const url='http://localhost:5001/get_exercise?num='+num_of_words;
+				Http.open("GET", url);
+				Http.send();
 
 				if(validity == true){
 					Http.onreadystatechange = (e) => {
-						// console.log(e)
+						
 						let responseText = Http.responseText
 						console.log("responseText",responseText)
 						if(responseText !== ""){
@@ -112,7 +116,7 @@
 						}
 					}
 					document.getElementById("words_to_type").style.display = "block"
-				}// alert("successfull")
+				}
 			}
 
 			function random_int(min,max){
@@ -179,8 +183,13 @@
 					console.log(slowest_words)
 					hard_words.push(...slowest_words)
 					if (word_count > hard_words.length){
-						alert("You don't have enough hard words yet. Please either enter a number less than "+hard_words.length+"\n or do some more normal exercises so you can get more words to improve on")
-					} else {
+						if(hard_words.length==0){
+							alert("Do some normal exercises to get some words to improve on in adaptive mode. You currently have no hard words to work on.")
+
+						}else{
+						alert("You don't have that many hard words. Please either enter a number less than "+hard_words.length+"\nor do some more normal exercises so you can get more words to improve on")
+						}
+					}else {
 						console.log(hard_words)
 						let sentences = []
 						let done_indxs = []
@@ -233,16 +242,11 @@
 
 
 			function process(e){
-				// console.log("e.keyCode=",e.keyCode)
-				// Todo 
-				// 1. take care of backspaces.
-				// 2. increment only when it is a keyboard charecter
-				// document.getElementById("ii_visible").innerText += e.keyCode
-				// console.log("e.key=",e.key,"e.keyCode=",e.keyCode,"e=",e)
+				
 		
-				if(e.key.length === 1){//typed chars
+				if(e.key.length === 1){
 					document.getElementById("ii").textContent += e.key
-				} else if(e.keyCode === 8){//backspace
+				} else if(e.keyCode === 8){
 					let curr_value = document.getElementById("ii").textContent
 					document.getElementById("ii").textContent = curr_value.substring(0,curr_value.length-1)
 				}
@@ -254,12 +258,11 @@
 				let [is_word, is_correct, orig_word] = check(cidx, user_input)
 
 				highlighted_input = highlight_errors(user_input, type_content)
-				// highlighted_input = user_input
-				// console.log("highlighted_input",highlighted_input)
+				
 				document.getElementById("ii").innerHTML = highlighted_input
-				// setCaret("ii_visible", highlighted_input.length)
+				
 
-				// statistics[orig_word] = {}
+				
 				
 				if(is_word) {
 					cur_statistics[orig_word] = {}
@@ -269,7 +272,7 @@
 					cur_statistics[orig_word]["speed"] = speed
 					if(is_correct) {
 						cur_statistics[orig_word]["is_correct"] = true
-					} else { // not correct
+					} else { 
 						cur_statistics[orig_word]["is_correct"] = false
 					}
 					start_time = (new Date()).getTime()
@@ -278,7 +281,7 @@
 				
 				sentences = document.getElementById("words_to_type").innerText
 				
-				if(e.keyCode == 8){ //backspace
+				if(e.keyCode == 8){ 
 					cidx = cidx - 1	
 				} else{
 					cidx = cidx + 1
@@ -369,7 +372,7 @@
 					document.getElementById("num").value = ""
 					document.getElementById("num").focus()
 					return false
-				}else if(num == ""){//temp comment
+				}else if(num == ""){
 					alert("bro put an actual number")
 					document.getElementById("num").focus()
 					return false
@@ -395,29 +398,22 @@
 
 	</head>
 	<body>
-		<!--
-			1. Create a input field to capture for number of words
-			2. Add a submit button
-			3. On press of submit button call a python API that returns list of words
-			https://www.freecodecamp.org/news/here-is-the-most-popular-ways-to-make-an-http-request-in-javascript-954ce8c95aaa/
-		-->
+		
 		Number of words: 
 		<input type="text" id="num" type="number" value="2"/>
 		<input type="submit" onclick="generate_exercise()" value="Generate Exercise"/>
 		<input type="submit" onclick="generate_adaptive_exercise()" value="Generate Adaptive Exercise"/>
-		<div id="words_to_type" style="border: 1px; border-style: solid; bottom:-100; display:none"></div>
-		<!-- <textarea id="ii" rows=10 cols=100 placeholder="Type here"></textarea> -->
-
-		
-
-		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;position: absolute; bottom:550">
-			<!-- Change <font style="color:red">m</font>e <font style="color:red">bot</font>e! -->
+		<div id="words_to_type" style="border: 1px; border-style: solid; bottom:-100; display:none; width: 100rem; height: 5rem;">
+			
 		</div>
 
-		<div id="ii" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem; position: absolute; bottom:550">
+		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;position: absolute; width: 100rem; top:8rem">
 		</div>
 
-		<div id="stats" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem; position:relative; bottom:-200;">
+		<div id="ii" contenteditable="false" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 100rem; position: absolute; top:8rem">
+		</div>
+
+		<div id="stats" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem; position:relative; top:18rem;">
 			Stats:
 
 		</div>
