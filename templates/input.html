@@ -134,7 +134,7 @@
 
 
 			function set_setences(sentences){
-					document.getElementById("words_to_type").innerText=sentences
+					document.getElementById("words_to_type").innerText=sentences.toLowerCase()
 					function prepare_div(id){					
 					  	document.getElementById(id).textContent = ''
 					  	document.getElementById(id).style.display = "block"
@@ -154,17 +154,16 @@
 				let hard_words = []
 				let slowest_words = []
 				hard_words = Object.keys(statistics).filter(function(key){
-
 					if (statistics[key]["is_correct"] == false) {
 						return key
 					}
 				})
+
 				console.log(hard_words)
 				slowest_words = Object.keys(statistics).filter(function(key){
 						console.log(statistics[key]["is_correct"])
 						if (statistics[key]["is_correct"] == true){
 							return([key, statistics[key]["speed"]])
-
 						}
 				})
 
@@ -174,16 +173,11 @@
 				
 				slowest_words.reverse()
 
-				if(slowest_words.length > 3){
-					slowest_words = slowest_words.slice(0,3)
+				if(slowest_words.length > 10){
+					slowest_words = slowest_words.slice(0,10)
 				}
 				console.log("slowest_words",slowest_words)
 				console.log(slowest_words)
-				// slowest_words_new = slowest_words.map(function(data){
-
-				// 	return data[0]
-				// })
-				// console.log(slowest_words_new)
 				hard_words.push(...slowest_words)
 				if (word_count > hard_words.length){
 					alert("You don't have enough hard words yet. Please enter a number less than "+hard_words.length)
@@ -192,18 +186,10 @@
 					let sentences = []
 					let done_indxs = []
 					sentences = shuffle(hard_words)
-					// for(let i = 0; i<word_count; i++) {
-					// 	let index = random_int(0,word_count-1)
-					// 	while(done_indxs.includes(index)){
-					// 		index = random_int(0,word_count-1)
-					// 	}
-					// 	sentences.push(hard_words[index])
-					// 	done_indxs.push(index)
-						
-					// }
-					// sentences = sentences.join(" ")
 					sentences = sentences.slice(0,word_count)
 					set_setences(sentences.join(" "))
+					document.getElementById("ii_visible").focus()
+					console.log(sentences.join(" "))
 				}
 			}
 			
@@ -295,7 +281,9 @@
 				} else{
 					cidx = cidx + 1
 				}
+				console.log("cidx=",cidx)
 				if(cidx == sentences.length){
+
 					document.getElementById('ii').setAttribute("contenteditable", false)
 					document.getElementById('ii_visible').setAttribute("contenteditable", false)
 					alert("your done with the sentence, check stats !")
@@ -389,15 +377,16 @@
 		<div id="words_to_type"></div>
 		<!-- <textarea id="ii" rows=10 cols=100 placeholder="Type here"></textarea> -->
 
-		<div id="ii" contenteditable="true" style="display:none; border: 0px; border-style: solid; color: black; height: 2rem; width: 50rem;">
-		</div>
+		
 
-		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;">
+		<div id="ii_visible" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem;position: absolute;">
 			<!-- Change <font style="color:red">m</font>e <font style="color:red">bot</font>e! -->
 		</div>
 
+		<div id="ii" contenteditable="true" style="display:none; border: 1px; border-style: solid; color: black; height: 10rem; width: 50rem; position: absolute;">
+		</div>
 
-		<div id="stats" style="display:block; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem;">
+		<div id="stats" style="display:block; border: 1px; border-style: solid; color: black; height: 10rem; width: 25rem; position:relative; bottom:-200;">
 			Stats:
 
 		</div>
