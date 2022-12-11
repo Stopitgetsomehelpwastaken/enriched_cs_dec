@@ -12,19 +12,19 @@ Also just btw files hackathon_dec_2022_p1.py and hackathon_dec_2022_p3.py are co
 
 # Steps
 
-## Create a virtual enviornment
+## 1.Create a virtual enviornment
 ```python3 -m venv my_venv```
 
-## source the virtual environment
+## 2.Source the virtual environment
 ```source my_venv/bin/activate```
 
-## install all dependencies required by project in the virtual environment
+## 3.Install all dependencies required by project in the virtual environment
 ```pip3 install -r requirements.txt```
 
-## start python server
+## 4.Start python server
 ```python3 main_server.py```
 
-## Go to the page
+## 5.Go to the page
 http://localhost:5001
 
  
